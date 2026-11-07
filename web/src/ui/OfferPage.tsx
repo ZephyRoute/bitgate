@@ -4,6 +4,7 @@ import { scriptToAddress } from "../lib/bitcoin";
 import { fmtBtc, fmtDuration, fmtPct, fmtPremium, fmtSats, fmtToken, fmtUsd, parseToken, usdPerBtc } from "../lib/format";
 import { cancelOffer, getFeeBps, getOffer, getReputation, getTrade, takeOffer, type Offer } from "../lib/stellar";
 import { AccountLink, ActionButton, Badge, Countdown, ExtLink, Notice, Row, Spinner, errorText } from "./components";
+import { ShareOffer } from "./Guest";
 import { offerState } from "./Market";
 import { ReadyGate } from "./Onboarding";
 import { go, useChain, useLang, usePoll, useWallet } from "./state";
@@ -58,6 +59,8 @@ export function OfferPage({ id }: { id: bigint }) {
             </>
           )}
         </p>
+
+        {state === "open" && <ShareOffer offer={o} />}
 
         <dl className="facts">
           <Row label={t("Disponible", "Available")}>{fmtToken(o.remaining)} USDC</Row>
