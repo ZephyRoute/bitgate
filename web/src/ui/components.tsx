@@ -9,6 +9,14 @@ import { useLang, useNow, type Lang } from "./state";
 
 const ERROR_TEXT: Record<string, [string, string]> = {
   OfferNotFound: ["Esa oferta no existe.", "That offer does not exist."],
+  InsufficientSignet: [
+    "No alcanzan los sats de tu wallet signet para este pago y su comisión.",
+    "Your signet wallet does not have enough sats for this payment and its fee.",
+  ],
+  "Friendbot failed": [
+    "Friendbot no respondió. Espera unos segundos y vuelve a intentar.",
+    "Friendbot did not answer. Wait a few seconds and try again.",
+  ],
   TradeNotFound: ["Ese trade no existe.", "That trade does not exist."],
   InvalidAmount: ["El monto está fuera de los límites de la oferta.", "The amount is outside the offer's limits."],
   InvalidPrice: ["El precio debe ser mayor que cero.", "The price must be above zero."],

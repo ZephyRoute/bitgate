@@ -16,6 +16,7 @@ import {
 import * as freighter from "@stellar/freighter-api";
 import { CONFIG } from "../config";
 import { bytesToHex, hexToBytes } from "./bitcoin";
+import { guestSigner } from "./guest";
 import type { SorobanProofArgs } from "./proof";
 
 const server = new rpc.Server(CONFIG.rpcUrl);
@@ -243,14 +244,24 @@ export interface Sent {
   result: unknown;
 }
 
-/** Signs with Freighter as `source`, submits and waits for the result. */
+/**
+ * Signs as `source` (in the browser for the guest account, with Freighter
+ * otherwise), submits and waits for the result.
+ */
 async function submit(tx: ReturnType<TransactionBuilder["build"]>, source: string): Promise<Sent> {
-  const signed = await freighter.signTransaction(tx.toXDR(), {
-    networkPassphrase: CONFIG.networkPassphrase,
-    address: source,
-  });
-  if (signed.error) throw new Error(signed.error.message ?? "Freighter refused to sign");
-  const final = TransactionBuilder.fromXDR(signed.signedTxXdr, CONFIG.networkPassphrase);
+  let final: ReturnType<TransactionBuilder["build"]> | ReturnType<typeof TransactionBuilder.fromXDR>;
+  const guest = guestSigner(source);
+  if (guest) {
+    tx.sign(guest);
+    final = tx;
+  } else {
+    const signed = await freighter.signTransaction(tx.toXDR(), {
+      networkPassphrase: CONFIG.networkPassphrase,
+      address: source,
+    });
+    if (signed.error) throw new Error(signed.error.message ?? "Freighter refused to sign");
+    final = TransactionBuilder.fromXDR(signed.signedTxXdr, CONFIG.networkPassphrase);
+  }
   const sent = await server.sendTransaction(final);
   if (sent.status === "ERROR" || sent.status === "TRY_AGAIN_LATER") {
     throw new Error(`Transaction ${sent.status.toLowerCase()}`);

@@ -30,6 +30,7 @@ import {
   errorText,
   type StepState,
 } from "./components";
+import { GuestPay } from "./Guest";
 import { TradeStatusBadge } from "./Market";
 import { useChain, useLang, useNow, usePoll, useWallet } from "./state";
 
@@ -277,6 +278,13 @@ function Tracker({ trade, offer, onChange }: { trade: Trade; offer: Offer; onCha
                 </p>
               </div>
             </div>
+          )}
+          {!payment && btcAddress && !expired && address === trade.taker && (
+            <GuestPay
+              to={btcAddress}
+              sats={trade.satsDue}
+              onPaid={(txid) => setManual({ txid, sats: trade.satsDue, height: null })}
+            />
           )}
           {!payment && (
             <form

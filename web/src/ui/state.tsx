@@ -1,14 +1,21 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { tipHeight } from "../lib/esplora";
+import { ensureGuestStellar, guestSigner, savedWalletMode, saveWalletMode } from "../lib/guest";
 import {
   accountState,
+  addUsdcTrustline,
   bestTip,
+  buyTestUsdc,
   connectWallet,
+  fundWithFriendbot,
   knownWalletAddress,
   reflectorBtcPrice,
   type AccountState,
   type OraclePrice,
 } from "../lib/stellar";
+
+/** Test USDC a new guest account starts with: enough to sell, or to bond a buy. */
+const GUEST_STARTING_USDC = 10;
 
 // ── Language ────────────────────────────────────────────────────────────────
 
@@ -116,8 +123,14 @@ interface WalletState {
   address: string | null;
   account: AccountState | null;
   connecting: boolean;
+  /** Guest setup step in progress, for the button label. */
+  setupStep: string | null;
   error: string | null;
+  /** True when the connected account is the in-browser guest account. */
+  isGuest: boolean;
   connect: () => Promise<void>;
+  /** Creates (or restores) the guest account and makes it ready to trade. */
+  connectGuest: () => Promise<void>;
   disconnect: () => void;
   refreshAccount: () => Promise<void>;
 }
@@ -135,8 +148,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setAccount(await accountState(address));
   }, [address]);
 
+  const [setupStep, setSetupStep] = useState<string | null>(null);
+
   useEffect(() => {
-    knownWalletAddress().then((a) => a && setAddress(a));
+    if (savedWalletMode() === "guest") setAddress(ensureGuestStellar());
+    else knownWalletAddress().then((a) => a && setAddress(a));
   }, []);
 
   useEffect(() => {
@@ -151,6 +167,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       setAddress(await connectWallet());
+      saveWalletMode("freighter");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -158,13 +175,50 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const connectGuest = useCallback(async () => {
+    setConnecting(true);
+    setError(null);
+    try {
+      const guest = ensureGuestStellar();
+      saveWalletMode("guest");
+      let state = await accountState(guest);
+      if (!state.exists) {
+        setSetupStep("friendbot");
+        await fundWithFriendbot(guest);
+        state = await accountState(guest);
+      }
+      if (state.usdc === null) {
+        setSetupStep("trustline");
+        await addUsdcTrustline(guest);
+        state = await accountState(guest);
+      }
+      if ((state.usdc ?? 0n) < BigInt(GUEST_STARTING_USDC) * 10_000_000n) {
+        setSetupStep("usdc");
+        // Best effort: the DEX can lack liquidity; the ready gate offers it again.
+        await buyTestUsdc(guest, GUEST_STARTING_USDC).catch(() => undefined);
+      }
+      setAddress(guest);
+      setAccount(await accountState(guest));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSetupStep(null);
+      setConnecting(false);
+    }
+  }, []);
+
   const disconnect = useCallback(() => {
+    saveWalletMode(null);
     setAddress(null);
     setAccount(null);
   }, []);
 
+  const isGuest = address != null && guestSigner(address) != null;
+
   return (
-    <WalletCtx.Provider value={{ address, account, connecting, error, connect, disconnect, refreshAccount }}>
+    <WalletCtx.Provider
+      value={{ address, account, connecting, setupStep, error, isGuest, connect, connectGuest, disconnect, refreshAccount }}
+    >
       {children}
     </WalletCtx.Provider>
   );

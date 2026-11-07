@@ -56,3 +56,31 @@ export async function txStatus(txid: string): Promise<EsploraStatus> {
 export async function merkleProof(txid: string): Promise<EsploraMerkleProof> {
   return (await get(`/tx/${txid}/merkle-proof`, "json")) as EsploraMerkleProof;
 }
+
+export interface EsploraUtxo {
+  txid: string;
+  vout: number;
+  value: number;
+  status: EsploraStatus;
+}
+
+/** Unspent outputs of an address, confirmed and in the mempool. */
+export async function addressUtxos(address: string): Promise<EsploraUtxo[]> {
+  return (await get(`/address/${address}/utxo`, "json")) as EsploraUtxo[];
+}
+
+/** Broadcasts a raw transaction and returns its txid. Tries each API in turn. */
+export async function broadcastTx(rawHex: string): Promise<string> {
+  let lastError: unknown;
+  for (const base of CONFIG.esplora) {
+    try {
+      const res = await fetch(base + "/tx", { method: "POST", body: rawHex, signal: AbortSignal.timeout(20_000) });
+      const text = (await res.text()).trim();
+      if (!res.ok) throw new Error(`Broadcast rejected: ${text.slice(0, 160)}`);
+      return text;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
+}

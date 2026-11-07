@@ -2,6 +2,7 @@ import { CONFIG } from "./config";
 import { shortAddr } from "./lib/format";
 import { CreateOffer } from "./ui/CreateOffer";
 import { ExtLink, errorText } from "./ui/components";
+import { GuestButton } from "./ui/Guest";
 import { HowItWorks } from "./ui/HowItWorks";
 import { Market } from "./ui/Market";
 import { OfferPage } from "./ui/OfferPage";
@@ -45,7 +46,7 @@ function Logo() {
 
 function Header() {
   const { t, lang, setLang } = useLang();
-  const { address, connect, connecting, disconnect, error } = useWallet();
+  const { address, connect, connecting, disconnect, error, isGuest } = useWallet();
   const { lightClientTip, signetTip } = useChain();
   const behind = lightClientTip != null && signetTip != null ? signetTip - lightClientTip : null;
 
@@ -82,12 +83,16 @@ function Header() {
         </button>
         {address ? (
           <button className="btn btn-secondary btn-sm mono" onClick={disconnect} title={t("Desconectar", "Disconnect")}>
+            {isGuest && <span className="guest-tag">{t("Invitado", "Guest")}</span>}
             {shortAddr(address)}
           </button>
         ) : (
-          <button className="btn btn-primary btn-sm" onClick={connect} disabled={connecting}>
-            {t("Conectar", "Connect")}
-          </button>
+          <>
+            <GuestButton small />
+            <button className="btn btn-ghost btn-sm" onClick={connect} disabled={connecting}>
+              Freighter
+            </button>
+          </>
         )}
       </div>
       {error && <div className="topbar-error">{errorText(new Error(error), lang)}</div>}

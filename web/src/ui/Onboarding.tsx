@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { fmtToken } from "../lib/format";
 import { addUsdcTrustline, buyTestUsdc, fundWithFriendbot } from "../lib/stellar";
 import { ActionButton, Notice, errorText } from "./components";
+import { GuestButton } from "./Guest";
 import { useLang, useWallet } from "./state";
 
 /**
@@ -16,10 +17,18 @@ export function ReadyGate({ needUsdc, children }: { needUsdc: bigint; children: 
   if (!address) {
     return (
       <div className="gate">
-        <p>{t("Conecta Freighter (en Testnet) para continuar.", "Connect Freighter (on Testnet) to continue.")}</p>
-        <button className="btn btn-primary" onClick={connect} disabled={connecting}>
-          {t("Conectar wallet", "Connect wallet")}
-        </button>
+        <p>
+          {t(
+            "Prueba sin instalar nada: creamos una cuenta de testnet en este navegador, con XLM y 10 USDC de prueba.",
+            "Try it without installing anything: we create a testnet account in this browser, with XLM and 10 test USDC.",
+          )}
+        </p>
+        <div className="gate-actions">
+          <GuestButton />
+          <button className="btn btn-ghost" onClick={connect} disabled={connecting}>
+            {t("Usar Freighter", "Use Freighter")}
+          </button>
+        </div>
         {error && <Notice kind="error">{errorText(new Error(error), lang)}</Notice>}
       </div>
     );
