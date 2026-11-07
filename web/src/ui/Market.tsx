@@ -2,6 +2,7 @@ import { CONFIG } from "../config";
 import { fmtPct, fmtPremium, fmtToken, fmtUsd, usdPerBtc } from "../lib/format";
 import { allOffers, allTrades, type Offer, type Trade } from "../lib/stellar";
 import { AccountLink, Badge, ExtLink, Notice, Spinner, Stat, errorText } from "./components";
+import { GuestButton } from "./Guest";
 import { useChain, useLang, usePoll, useWallet } from "./state";
 
 export function offerState(o: Offer): "open" | "busy" | "closed" {
@@ -50,8 +51,17 @@ export function Market() {
             "The seller locks USDC in a Soroban contract. You pay BTC on Bitcoin. The USDC is released only when the Writz light client proves on Stellar that your payment arrived, with the agreed confirmations. No bridge, no custodian, no wrapped BTC.",
           )}
         </p>
+        {!address && (
+          <p className="muted small">
+            {t(
+              "Pruébalo en 3 minutos sin instalar nada: creamos una cuenta de Stellar testnet y una wallet de Bitcoin signet en tu navegador.",
+              "Try it in 3 minutes without installing anything: we create a Stellar testnet account and a Bitcoin signet wallet in your browser.",
+            )}
+          </p>
+        )}
         <div className="hero-actions">
-          <a className="btn btn-primary" href="#/new">
+          {!address && <GuestButton />}
+          <a className={`btn ${address ? "btn-primary" : "btn-secondary"}`} href="#/new">
             {t("Vender USDC por BTC", "Sell USDC for BTC")}
           </a>
           <a className="btn btn-secondary" href="#/how">
