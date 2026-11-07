@@ -190,7 +190,11 @@ function Tracker({ trade, offer, onChange }: { trade: Trade; offer: Offer; onCha
     20_000,
     [btcAddress, String(trade.id)],
   );
-  const payment = manual ?? detected.data ?? null;
+  // A payment named by txid (or just sent from the guest wallet) has no block
+  // height yet; once the address scan sees the same txid, use that copy so the
+  // confirmations keep counting.
+  const payment =
+    manual && detected.data?.txid === manual.txid ? detected.data : (manual ?? detected.data ?? null);
 
   // Confirmations as the Writz light client counts them, not the explorer.
   const confirmations =
