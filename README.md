@@ -66,9 +66,9 @@ Partial fills and on-chain reputation per address (sales, buys, lapsed reservati
 
 BitGate is built around the Writz light client; without the cross-contract call there is no product.
 
-- **`bitcoin-spv` on testnet** (`CAHHY4S4WCIFU4LBSKBI3IP6A4QYR2COV6EACDEBXGPJFDWBJWGOMCLP`): `verify_transaction` on every claim, `get_best_tip` on every reservation.
+- **`bitcoin-spv` on testnet** (`CBX23YKCCJMAMBMSCNP6YVKEXUIYK2CTKSR4TQ3RVBPAFYZFVCW7W4EO`): `verify_transaction` on every claim, `get_best_tip` on every reservation.
 - **`writz-spv-client`**: the official Soroban client crate (typed `BitcoinSpvClient`, `SPVError`, `find_output_value`), depended on from the Writz repository pinned to commit `67692a5` until it is published on crates.io.
-- **Tests run against the exact deployed WASM.** [`fixtures/bitcoin_spv_testnet.wasm`](contracts/bitgate-escrow/fixtures/bitcoin_spv_testnet.wasm) was fetched with `stellar contract fetch` from the testnet contract (sha256 `bbc23a81...ba01`). The test suite seeds it with a real signet checkpoint (block 327,599), submits the real headers of blocks 327,600 and 327,601, and proves a real signet transaction. Nothing on the Bitcoin side is mocked.
+- **Tests run against the real Writz WASM.** [`fixtures/bitcoin_spv_testnet.wasm`](contracts/bitgate-escrow/fixtures/bitcoin_spv_testnet.wasm) was fetched with `stellar contract fetch` from the original testnet contract (sha256 `bbc23a81...ba01`). Writz redeployed the light client on 2026-10-25 as `CBX23YKCCJMAMBMSCNP6YVKEXUIYK2CTKSR4TQ3RVBPAFYZFVCW7W4EO`; the escrow was repointed to it with `set_spv` on 2026-11-07 ([tx](https://stellar.expert/explorer/testnet/tx/e569de370898bf8558aac6c041469dc06b101e971a0aedd5fa2e2b26c65d03c9)), and the fixture moves to the new WASM next. The test suite seeds it with a real signet checkpoint (block 327,599), submits the real headers of blocks 327,600 and 327,601, and proves a real signet transaction. Nothing on the Bitcoin side is mocked.
 - **Writz relayer** (`GET /spv-proof/:txid`) for proofs, with an **in-browser fallback** that builds the same arguments from Esplora (`web/src/lib/proof.ts`). A unit test checks the fallback produces byte-for-byte the relayer's `sorobanArgs`. This is the "manual proof submission" mode the Writz relayer design document asks frontends for.
 - **Reflector oracle** (the one Writz Lend reads) shows each offer's premium or discount against the market.
 
@@ -77,7 +77,7 @@ BitGate is built around the Writz light client; without the cross-contract call 
 | | |
 |---|---|
 | BitGate escrow | [`CDKVJOISYM4BWV2UQKNPBZJBPK7DX3GMK2RPZNYW2LUG7GMPNEH42TVT`](https://stellar.expert/explorer/testnet/contract/CDKVJOISYM4BWV2UQKNPBZJBPK7DX3GMK2RPZNYW2LUG7GMPNEH42TVT) |
-| Writz `bitcoin-spv` | [`CAHHY4S4WCIFU4LBSKBI3IP6A4QYR2COV6EACDEBXGPJFDWBJWGOMCLP`](https://stellar.expert/explorer/testnet/contract/CAHHY4S4WCIFU4LBSKBI3IP6A4QYR2COV6EACDEBXGPJFDWBJWGOMCLP) |
+| Writz `bitcoin-spv` | [`CBX23YKCCJMAMBMSCNP6YVKEXUIYK2CTKSR4TQ3RVBPAFYZFVCW7W4EO`](https://stellar.expert/explorer/testnet/contract/CBX23YKCCJMAMBMSCNP6YVKEXUIYK2CTKSR4TQ3RVBPAFYZFVCW7W4EO) |
 | Token | Circle testnet USDC, [`CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA`](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA) |
 | Bitcoin network | Signet |
 
@@ -138,7 +138,7 @@ Deploy your own:
 stellar contract deploy --wasm target/wasm32v1-none/release/bitgate_escrow.wasm \
   --source-account me --network testnet -- \
   --admin $(stellar keys address me) \
-  --spv CAHHY4S4WCIFU4LBSKBI3IP6A4QYR2COV6EACDEBXGPJFDWBJWGOMCLP \
+  --spv CBX23YKCCJMAMBMSCNP6YVKEXUIYK2CTKSR4TQ3RVBPAFYZFVCW7W4EO \
   --treasury $(stellar keys address me) --fee_bps 30
 ```
 

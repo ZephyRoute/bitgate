@@ -126,7 +126,7 @@ pub struct BitGateEscrow;
 impl BitGateEscrow {
     /// Runs once, atomically, at deployment. `spv` is the Writz
     /// `bitcoin-spv` contract (testnet:
-    /// `CAHHY4S4WCIFU4LBSKBI3IP6A4QYR2COV6EACDEBXGPJFDWBJWGOMCLP`).
+    /// `CBX23YKCCJMAMBMSCNP6YVKEXUIYK2CTKSR4TQ3RVBPAFYZFVCW7W4EO`).
     pub fn __constructor(env: Env, admin: Address, spv: Address, treasury: Address, fee_bps: u32) {
         if fee_bps > MAX_FEE_BPS {
             soroban_sdk::panic_with_error!(&env, Error::InvalidFee);
