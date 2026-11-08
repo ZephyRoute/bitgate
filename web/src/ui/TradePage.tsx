@@ -172,9 +172,32 @@ function Settled({ trade, offer }: { trade: Trade; offer: Offer }) {
   );
 }
 
+/** Payment details for an external signet wallet: QR, amount and address. */
+function ExternalPay({ address, sats, deadline }: { address: string; sats: number; deadline: number }) {
+  const { t } = useLang();
+  return (
+    <div className="pay-box">
+      <QrCode text={bip21(address, sats, "BitGate")} />
+      <div className="pay-details">
+        <div className="pay-amount">
+          {fmtSats(sats)} <span className="unit">sats</span>
+          <CopyButton value={fmtBtc(sats)} label={t("Copiar BTC", "Copy BTC")} />
+        </div>
+        <div className="mono break small">{address}</div>
+        <CopyButton value={address} label={t("Copiar dirección", "Copy address")} />
+        <p className="muted small">
+          {t("Envía al menos este monto en una sola salida. Vence en", "Send at least this amount in one output. Due in")}{" "}
+          <Countdown deadline={deadline} />.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function Tracker({ trade, offer, onChange }: { trade: Trade; offer: Offer; onChange: () => void }) {
   const { t, lang } = useLang();
-  const { address } = useWallet();
+  const { address, isGuest } = useWallet();
+  const guestTaker = isGuest && address === trade.taker;
   const { lightClientTip, signetTip } = useChain();
   const now = useNow();
   const feeBps = usePoll(getFeeBps, 0, []);
@@ -266,29 +289,23 @@ function Tracker({ trade, offer, onChange }: { trade: Trade; offer: Offer; onCha
         </Step>
 
         <Step state={stepPay} index={2} title={t("Paga en Bitcoin (signet)", "Pay on Bitcoin (signet)")}>
-          {!payment && btcAddress && (
-            <div className="pay-box">
-              <QrCode text={bip21(btcAddress, trade.satsDue, `BitGate trade ${trade.id}`)} />
-              <div className="pay-details">
-                <div className="pay-amount">
-                  {fmtSats(trade.satsDue)} <span className="unit">sats</span>
-                  <CopyButton value={fmtBtc(trade.satsDue)} label={t("Copiar BTC", "Copy BTC")} />
-                </div>
-                <div className="mono break small">{btcAddress}</div>
-                <CopyButton value={btcAddress} label={t("Copiar dirección", "Copy address")} />
-                <p className="muted small">
-                  {t("Envía al menos este monto en una sola salida. Vence en", "Send at least this amount in one output. Due in")}{" "}
-                  <Countdown deadline={trade.deadline} />.
-                </p>
-              </div>
-            </div>
-          )}
-          {!payment && btcAddress && !expired && address === trade.taker && (
+          {/* A guest pays with one button from the in-browser wallet; the QR is
+              only for people with their own signet wallet, so it stays folded. */}
+          {!payment && btcAddress && !expired && guestTaker && (
             <GuestPay
               to={btcAddress}
               sats={trade.satsDue}
               onPaid={(txid) => setManual({ txid, sats: trade.satsDue, height: null })}
             />
+          )}
+          {!payment && btcAddress && guestTaker && (
+            <details className="alt-pay">
+              <summary>{t("¿Tienes tu propia wallet signet? Paga con QR", "Have your own signet wallet? Pay by QR")}</summary>
+              <ExternalPay address={btcAddress} sats={trade.satsDue} deadline={trade.deadline} />
+            </details>
+          )}
+          {!payment && btcAddress && !guestTaker && (
+            <ExternalPay address={btcAddress} sats={trade.satsDue} deadline={trade.deadline} />
           )}
           {!payment && (
             <form

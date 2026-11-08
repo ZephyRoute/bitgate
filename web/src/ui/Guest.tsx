@@ -52,26 +52,33 @@ export function GuestPay({ to, sats, onPaid }: { to: string; sats: number; onPai
           {t(`Pagar ${fmtSats(sats)} sats ahora`, `Pay ${fmtSats(sats)} sats now`)}
         </ActionButton>
       ) : (
-        <>
-          <p className="small">
+        <ol className="guest-steps small">
+          <li>
             {t(
-              `Necesitas al menos ${fmtSats(need)} sats de prueba (signet, sin valor). Recíbelos en tu dirección:`,
-              `You need at least ${fmtSats(need)} test sats (signet, no value). Receive them at your address:`,
+              `Te faltan sats de prueba: necesitas ${fmtSats(need)} (son de prueba, no valen dinero). Copia tu dirección de BitGate:`,
+              `You need ${fmtSats(need)} test sats (test only, no value). Copy your BitGate address:`,
             )}
-          </p>
-          <div className="mono break small">{address}</div>
-          <CopyButton value={address} label={t("Copiar dirección", "Copy address")} />
-          <p className="muted small">
-            {t("Faucets:", "Faucets:")}{" "}
+            <div className="mono break">{address}</div>
+            <CopyButton value={address} label={t("Copiar mi dirección", "Copy my address")} />
+          </li>
+          <li>
+            {t("Pídelos: ", "Ask for them: ")}
+            <ExtLink href={SATS_HELP}>{t("escríbele a @jafetchv por Telegram", "message @jafetchv on Telegram")}</ExtLink>
+            {t(" y pégale tu dirección. También sirve un faucet: ", " and paste your address. A faucet also works: ")}
             {FAUCETS.map((f, i) => (
               <span key={f}>
                 {i > 0 && " · "}
                 <ExtLink href={f}>{f.replace("https://", "")}</ExtLink>
               </span>
-            ))}{" "}
-            · <ExtLink href={SATS_HELP}>{t("o pídelos por Telegram", "or ask on Telegram")}</ExtLink>
-          </p>
-        </>
+            ))}
+          </li>
+          <li>
+            {t(
+              "Deja esta página abierta. Cuando lleguen los sats (1 o 2 minutos) aquí aparece el botón \"Pagar\". No hace falta escanear ningún QR.",
+              "Keep this page open. When the sats arrive (1 or 2 minutes) a \"Pay\" button shows up here. No QR scanning needed.",
+            )}
+          </li>
+        </ol>
       )}
       <p className="muted small">
         {t(

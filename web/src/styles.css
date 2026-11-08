@@ -950,6 +950,26 @@ tr.clickable:hover td {
   border-radius: 10px;
   background: var(--accent-soft);
 }
+.guest-steps {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.guest-steps li > div {
+  margin: 0.25rem 0;
+}
+.alt-pay {
+  margin-top: 0.75rem;
+}
+.alt-pay summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.alt-pay[open] summary {
+  margin-bottom: 0.5rem;
+}
 .guest-pay-head {
   display: flex;
   flex-wrap: wrap;
