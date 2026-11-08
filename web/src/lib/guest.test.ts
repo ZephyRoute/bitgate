@@ -10,7 +10,8 @@ vi.mock("./esplora", () => ({
   broadcastTx: (hex: string) => broadcast(hex),
 }));
 
-const { ensureGuestStellar, guestBtcAddress, guestSigner, payFromGuest } = await import("./guest");
+const { commitGuestReceive, ensureGuestStellar, guestBtcAddress, guestBtcBalance, guestReceiveAddress, guestSigner, payFromGuest } =
+  await import("./guest");
 
 // A signet address that is not the guest's, to pay to.
 const MAKER = "tb1qxs8qnv50kswwe76nlmvq4rshpq6uxuyqkh9nqz";
@@ -58,8 +59,29 @@ describe("guest signet wallet", () => {
     expect(tx.getInput(0).finalScriptWitness?.length).toBe(2);
   });
 
+  it("gives sellers a separate receive address and spends what it receives", async () => {
+    const recv = guestReceiveAddress();
+    expect(recv).toMatch(/^tb1q[0-9a-z]{38}$/);
+    expect(recv).not.toBe(guestBtcAddress());
+    expect(guestReceiveAddress()).toBe(recv);
+    commitGuestReceive(recv);
+    expect(guestReceiveAddress()).not.toBe(recv);
+
+    // Only the receive address holds sats: they are counted and spendable.
+    utxos.mockImplementation(async (a: string) =>
+      a === recv ? [{ txid: FUNDING_TXID, vout: 1, value: 8_000, status: { confirmed: true } }] : [],
+    );
+    expect(await guestBtcBalance()).toBe(8_000);
+    await payFromGuest(MAKER, 3_000);
+    const tx = Transaction.fromRaw(hexToBytes(broadcast.mock.calls[0][0]));
+    expect(tx.getInput(0).finalScriptWitness?.length).toBe(2);
+  });
+
   it("refuses to pay more than it holds", async () => {
-    utxos.mockResolvedValue([{ txid: FUNDING_TXID, vout: 0, value: 2_000, status: { confirmed: true } }]);
+    const own = guestBtcAddress();
+    utxos.mockImplementation(async (a: string) =>
+      a === own ? [{ txid: FUNDING_TXID, vout: 0, value: 2_000, status: { confirmed: true } }] : [],
+    );
     await expect(payFromGuest(MAKER, 2_500)).rejects.toThrow("InsufficientSignet");
     expect(broadcast).not.toHaveBeenCalled();
   });

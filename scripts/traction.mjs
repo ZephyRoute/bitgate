@@ -61,3 +61,16 @@ console.log(`\nsince ${new Date(since * 1000).toISOString()}`);
 console.log(`all trades: ${rows.length} (${settled(rows).length} settled)`);
 console.log(`trades with an outside user: ${outsideTrades.length} (${settled(outsideTrades).length} settled)`);
 console.log(`unique outside users: ${outside.size}`);
+
+// Sellers who only published an offer also used the product, even with no buyer yet.
+const offerCount = Number(await read("offer_count"));
+const outsideMakers = new Set();
+console.log("\noffers by outside sellers:");
+for (let id = 1; id <= offerCount; id++) {
+  const o = await read("get_offer", u64(id));
+  if (INTERNAL.has(o.maker)) continue;
+  outsideMakers.add(o.maker);
+  console.log(`offer #${id} ${Number(o.remaining) / 1e7} USDC left  seller ${tag(o.maker)}${o.cancelled ? "  (cancelled)" : ""}`);
+}
+const everyone = new Set([...outside, ...outsideMakers]);
+console.log(`unique outside users (trades or offers): ${everyone.size}`);

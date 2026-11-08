@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { addressToScript } from "../lib/bitcoin";
 import { fmtPremium, fmtSats, fmtToken, fmtUsd, parseToken, satsPerTokenFor, usdPerBtc } from "../lib/format";
+import { commitGuestReceive, guestReceiveAddress } from "../lib/guest";
 import { createOffer } from "../lib/stellar";
 import { ActionButton, Notice } from "./components";
 import { ReadyGate } from "./Onboarding";
@@ -19,7 +20,10 @@ export function CreateOffer() {
   const { address, refreshAccount } = useWallet();
   const { oracle } = useChain();
 
-  const [btcAddress, setBtcAddress] = useState("");
+  // Prefilled with a fresh signet address held in this browser, so nobody
+  // needs a Bitcoin wallet to sell. Anyone with their own can paste it instead.
+  const [suggested] = useState(guestReceiveAddress);
+  const [btcAddress, setBtcAddress] = useState(suggested);
   const [amountIn, setAmountIn] = useState("100");
   const [priceIn, setPriceIn] = useState("");
   const [minFillIn, setMinFillIn] = useState("5");
@@ -78,9 +82,21 @@ export function CreateOffer() {
             spellCheck={false}
           />
           <span className="field-hint">
-            {t(
-              "Usa una dirección nueva solo para esta oferta: cualquier pago a ella después de una reserva cuenta para esa reserva.",
-              "Use a fresh address only for this offer: any payment to it after a reservation counts for that reservation.",
+            {btcAddress === suggested ? (
+              t(
+                "Ya está lista: es una dirección de prueba nueva que BitGate creó en este navegador solo para esta oferta. Los sats que te paguen quedan en tu wallet de invitado y te sirven para comprar. Si tienes tu propia wallet signet, puedes pegar tu dirección.",
+                "Ready to go: a fresh test address BitGate created in this browser just for this offer. Sats you receive stay in your guest wallet and you can use them to buy. If you have your own signet wallet, you can paste your address.",
+              )
+            ) : (
+              <>
+                {t(
+                  "Usa una dirección nueva solo para esta oferta: cualquier pago a ella después de una reserva cuenta para esa reserva. ",
+                  "Use a fresh address only for this offer: any payment to it after a reservation counts for that reservation. ",
+                )}
+                <button type="button" className="link-btn" onClick={() => setBtcAddress(suggested)}>
+                  {t("Usar la dirección de BitGate", "Use the BitGate address")}
+                </button>
+              </>
             )}
           </span>
         </label>
@@ -193,6 +209,7 @@ export function CreateOffer() {
                 windowSecs,
                 bondBps,
               });
+              commitGuestReceive(btcAddress);
               await refreshAccount();
               go(`/offer/${offerId}`);
             }}
