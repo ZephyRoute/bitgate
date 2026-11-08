@@ -35,11 +35,13 @@ export function App() {
 
 function Logo() {
   return (
-    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
-      <rect x="3" y="5" width="5" height="23" rx="1.5" fill="var(--accent)" />
-      <rect x="24" y="5" width="5" height="23" rx="1.5" fill="var(--accent)" />
-      <path d="M8 9 Q16 3 24 9" stroke="var(--ink)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <path d="M12 21 l3 3 l6-7" stroke="var(--ok)" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="8" fill="#E8891C" />
+      <g fill="#15181D">
+        <rect x="8.5" y="7" width="4" height="18" rx="1.2" />
+        <path d="M14.5 7h4a4.25 4.25 0 0 1 0 8.5h-4z" />
+        <path d="M14.5 17h4.75a4 4 0 0 1 0 8H14.5z" />
+      </g>
     </svg>
   );
 }
