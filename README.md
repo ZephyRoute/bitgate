@@ -5,7 +5,8 @@ No bridge, no custodian, no wrapped BTC, and neither side has to send first.
 
 [Live app](https://zephyroute.github.io/bitgate/) ·
 [Escrow on stellar.expert](https://stellar.expert/explorer/testnet/contract/CDKVJOISYM4BWV2UQKNPBZJBPK7DX3GMK2RPZNYW2LUG7GMPNEH42TVT) ·
-Built for the Pura Vida Ideathon 2026 (Genesis track, Writz integration bounty)
+1st place, Pura Vida Ideathon 2026 (Genesis track, plus the Writz integration bounty) ·
+3rd place, Código Cordillera 2026 (Scale track)
 
 > **ES:** BitGate es un escrow P2P de Bitcoin por USDC en Stellar. El vendedor bloquea USDC en un contrato de Soroban, el comprador paga BTC en Bitcoin y el contrato libera el USDC solo cuando el light client de Writz demuestra en Stellar que el pago llegó. Sin bridge, sin custodio, sin BTC envuelto. Testnet y signet.
 

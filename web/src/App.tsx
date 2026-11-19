@@ -27,7 +27,7 @@ export function App() {
         <ExtLink href={CONFIG.repo}>GitHub</ExtLink>
         <ExtLink href={CONFIG.explorer.stellarContract(CONFIG.escrowId)}>{t("Contrato", "Contract")}</ExtLink>
         <ExtLink href="https://docs.writz.xyz">Writz</ExtLink>
-        <span>{t("Hecho para el Pura Vida Ideathon", "Built for the Pura Vida Ideathon")}</span>
+        <span>{t("1.º en Pura Vida Ideathon · 3.º en Código Cordillera", "1st at Pura Vida Ideathon · 3rd at Código Cordillera")}</span>
       </footer>
     </>
   );
