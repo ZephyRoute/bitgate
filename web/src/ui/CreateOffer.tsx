@@ -2,10 +2,11 @@ import { useMemo, useState } from "react";
 import { addressToScript } from "../lib/bitcoin";
 import { fmtSats, fmtToken, fmtUsd, parseToken, satsPerTokenFor, usdPerBtc } from "../lib/format";
 import { commitGuestReceive, guestReceiveAddress } from "../lib/guest";
-import { createOffer } from "../lib/stellar";
+import { allOffers, createOffer } from "../lib/stellar";
 import { ActionButton, Notice, VsMarket } from "./components";
 import { ReadyGate } from "./Onboarding";
-import { go, useChain, useLang, useWallet } from "./state";
+import { offerState } from "./Market";
+import { go, useChain, useLang, usePoll, useWallet } from "./state";
 
 const DUST_SATS = 546;
 const WINDOWS = [
@@ -43,10 +44,24 @@ export function CreateOffer() {
     }
   }, [btcAddress]);
 
+  // One payment to an address shared by two live offers could settle either of them
+  // (threat model A1), so each live offer needs its own address.
+  const offers = usePoll(allOffers, 0, []);
+  const sharedWith = script
+    ? offers.data?.find((o) => o.btcScript.toLowerCase() === script.toLowerCase() && offerState(o) !== "closed")
+    : undefined;
+
   const satsPerToken = Number.isFinite(price) && price > 0 ? satsPerTokenFor(price) : null;
   const minFillSats = satsPerToken && minFill ? Number((minFill * satsPerToken + 9_999_999n) / 10_000_000n) : 0;
   const problems: string[] = [];
   if (btcAddress && !script) problems.push(t("Dirección inválida: usa una de signet (tb1q… o tb1p…).", "Invalid address: use a signet one (tb1q… or tb1p…)."));
+  if (sharedWith)
+    problems.push(
+      t(
+        `La oferta #${sharedWith.id} ya recibe pagos en esta dirección. Usa una dirección nueva para cada oferta, para que un pago no se confunda con otro.`,
+        `Offer #${sharedWith.id} already receives payments at this address. Use a fresh address for each offer, so one payment cannot be mistaken for another.`,
+      ),
+    );
   if (amount == null || amount <= 0n) problems.push(t("Monto inválido.", "Invalid amount."));
   if (minFill == null || minFill <= 0n) problems.push(t("Mínimo inválido.", "Invalid minimum."));
   if (amount && minFill && minFill > amount) problems.push(t("El mínimo no puede superar el monto.", "The minimum cannot exceed the amount."));
