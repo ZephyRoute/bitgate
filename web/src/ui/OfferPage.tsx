@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { CONFIG } from "../config";
 import { scriptToAddress } from "../lib/bitcoin";
-import { fmtBtc, fmtDuration, fmtPct, fmtPremium, fmtSats, fmtToken, fmtUsd, parseToken, usdPerBtc } from "../lib/format";
+import { fmtBtc, fmtDuration, fmtPct, fmtSats, fmtToken, fmtUsd, parseToken, usdPerBtc } from "../lib/format";
 import { cancelOffer, getFeeBps, getOffer, getReputation, getTrade, takeOffer, type Offer } from "../lib/stellar";
-import { AccountLink, ActionButton, Badge, Countdown, ExtLink, Notice, Row, Spinner, errorText } from "./components";
+import { AccountLink, ActionButton, Badge, Countdown, ExtLink, Notice, Row, Spinner, VsMarket, errorText } from "./components";
 import { ShareOffer } from "./Guest";
 import { offerState } from "./Market";
 import { ReadyGate } from "./Onboarding";
@@ -48,14 +48,30 @@ export function OfferPage({ id }: { id: bigint }) {
         </div>
 
         <div className="big-price">
-          {fmtUsd(price)} <span className="unit">/ BTC</span>
+          {fmtToken(o.remaining)} <span className="unit">USDC</span>
         </div>
+        <p className="offer-cost">
+          {state === "closed" ? (
+            <>
+              {fmtSats(Number(o.satsPerToken))} sats {t("por cada USDC", "per USDC")}
+            </>
+          ) : o.minFill < o.remaining ? (
+            <>
+              {t("por", "for")} {fmtSats(satsFor(o, o.remaining))} sats · {t("desde", "from")} {fmtSats(satsFor(o, o.minFill))} sats{" "}
+              ({t("compra mínima de", "minimum")} {fmtToken(o.minFill)} USDC)
+            </>
+          ) : (
+            <>
+              {t("por", "for")} {fmtSats(satsFor(o, o.remaining))} sats
+            </>
+          )}
+        </p>
         <p className="muted">
-          {String(o.satsPerToken)} sats {t("por cada USDC", "per USDC")}
+          {fmtSats(Number(o.satsPerToken))} sats {t("por USDC", "per USDC")} · {fmtUsd(price)} / BTC
           {oracle && (
             <>
-              {" "}
-              · {fmtPremium(price, oracle.usdPerBtc)} {t("frente a Reflector", "vs. Reflector")} ({fmtUsd(oracle.usdPerBtc)})
+              {", "}
+              <VsMarket price={price} market={oracle.usdPerBtc} /> ({t("Reflector", "Reflector")}: {fmtUsd(oracle.usdPerBtc)})
             </>
           )}
         </p>

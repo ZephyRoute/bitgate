@@ -57,6 +57,11 @@ export function fmtPremium(price: number, reference: number): string {
   return `${diff >= 0 ? "+" : ""}${diff.toFixed(1)}%`;
 }
 
+/** True when `price` rounds to 0.0% against `reference`, so a signed premium would read as noise ("-0.0%"). */
+export function atMarket(price: number, reference: number): boolean {
+  return Math.abs(((price - reference) / reference) * 100) < 0.05;
+}
+
 export function shortAddr(address: string, size = 4): string {
   return address.length <= 2 * size + 1 ? address : `${address.slice(0, size)}…${address.slice(-size)}`;
 }

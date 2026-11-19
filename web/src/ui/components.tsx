@@ -1,9 +1,22 @@
 import QRCode from "qrcode";
 import { useEffect, useState, type ReactNode } from "react";
 import { CONFIG } from "../config";
-import { fmtDuration, shortAddr } from "../lib/format";
+import { atMarket, fmtDuration, fmtPremium, shortAddr } from "../lib/format";
 import { ContractError } from "../lib/stellar";
 import { useLang, useNow, type Lang } from "./state";
+
+// ── Price against the market ────────────────────────────────────────────────
+
+/** "+2.5% vs. market", or "at market" when the difference rounds to zero. */
+export function VsMarket({ price, market }: { price: number; market: number }) {
+  const { t } = useLang();
+  if (atMarket(price, market)) return <>{t("igual al precio de mercado", "at market price")}</>;
+  return (
+    <>
+      {fmtPremium(price, market)} {t("frente al mercado", "vs. market")}
+    </>
+  );
+}
 
 // ── Error text ──────────────────────────────────────────────────────────────
 

@@ -3,6 +3,7 @@ import {
   fmtBtc,
   fmtDuration,
   fmtPct,
+  atMarket,
   fmtPremium,
   fmtToken,
   parseToken,
@@ -49,6 +50,11 @@ describe("prices", () => {
   it("shows premium against a reference", () => {
     expect(fmtPremium(82_000, 80_000)).toBe("+2.5%");
     expect(fmtPremium(60_000, 80_000)).toBe("-25.0%");
+  });
+
+  it("treats a premium that rounds to 0.0% as at market", () => {
+    expect(atMarket(73_910, 73_917)).toBe(true);
+    expect(atMarket(74_000, 73_917)).toBe(false);
   });
 
   it("formats BTC and percentages", () => {

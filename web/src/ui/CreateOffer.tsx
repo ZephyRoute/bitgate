@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { addressToScript } from "../lib/bitcoin";
-import { fmtPremium, fmtSats, fmtToken, fmtUsd, parseToken, satsPerTokenFor, usdPerBtc } from "../lib/format";
+import { fmtSats, fmtToken, fmtUsd, parseToken, satsPerTokenFor, usdPerBtc } from "../lib/format";
 import { commitGuestReceive, guestReceiveAddress } from "../lib/guest";
 import { createOffer } from "../lib/stellar";
-import { ActionButton, Notice } from "./components";
+import { ActionButton, Notice, VsMarket } from "./components";
 import { ReadyGate } from "./Onboarding";
 import { go, useChain, useLang, useWallet } from "./state";
 
@@ -138,7 +138,7 @@ export function CreateOffer() {
             {oracle && satsPerToken && (
               <>
                 {" "}
-                · {fmtPremium(usdPerBtc(satsPerToken), oracle.usdPerBtc)} {t("vs. Reflector", "vs. Reflector")} ({fmtUsd(oracle.usdPerBtc)})
+                · <VsMarket price={usdPerBtc(satsPerToken)} market={oracle.usdPerBtc} /> (Reflector: {fmtUsd(oracle.usdPerBtc)})
               </>
             )}
           </span>

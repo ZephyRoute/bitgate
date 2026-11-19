@@ -1,7 +1,7 @@
 import { CONFIG } from "../config";
-import { fmtPct, fmtPremium, fmtToken, fmtUsd, usdPerBtc } from "../lib/format";
+import { fmtPct, fmtToken, fmtUsd, usdPerBtc } from "../lib/format";
 import { allOffers, allTrades, type Offer, type Trade } from "../lib/stellar";
-import { AccountLink, Badge, ExtLink, Notice, Spinner, Stat, errorText } from "./components";
+import { AccountLink, Badge, ExtLink, Notice, Spinner, Stat, VsMarket, errorText } from "./components";
 import { GuestButton } from "./Guest";
 import { useChain, useLang, usePoll, useWallet } from "./state";
 
@@ -155,7 +155,7 @@ function OfferCard({ offer, oracleUsd }: { offer: Offer; oracleUsd: number | nul
       </div>
       <div className="offer-sub">
         {String(offer.satsPerToken)} sats {t("por USDC", "per USDC")}
-        {oracleUsd && <span className="premium"> · {fmtPremium(price, oracleUsd)} {t("vs. mercado", "vs. market")}</span>}
+        {oracleUsd && <span className="premium"> · <VsMarket price={price} market={oracleUsd} /></span>}
       </div>
       <dl className="offer-facts">
         <div>

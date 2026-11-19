@@ -983,3 +983,9 @@ tr.clickable:hover td {
   gap: 0.4rem;
   margin: 0.25rem 0 0.75rem;
 }
+.offer-cost {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
